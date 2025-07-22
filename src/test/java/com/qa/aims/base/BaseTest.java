@@ -4,7 +4,9 @@ import com.microsoft.playwright.Page;
 import com.qa.aims.Factory.PlaywrightFactory;
 import com.qa.aims.pages.HostelSessionMstPom;
 import com.qa.aims.projectUtality.ProjectUtils;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 
 import java.util.Properties;
@@ -16,7 +18,7 @@ public class BaseTest {
     protected PlaywrightFactory pf;
     protected HostelSessionMstPom HSP;
 
-    @BeforeTest
+    @BeforeClass
     public void setup() {
         pf = new PlaywrightFactory();
 
@@ -43,7 +45,7 @@ public class BaseTest {
         HSP.clickOnMSF();
     }
 
-    @AfterTest
+    @AfterClass
     public void tearDown() {
         if (page != null) {
             page.context().browser().close();
@@ -52,4 +54,7 @@ public class BaseTest {
             System.out.println("Page is null, browser may not have launched.");
         }
     }
+
+
+
 }
