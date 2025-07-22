@@ -27,7 +27,7 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-/build/
+/build/TestExecutionReport.html
 !**/src/main/**/build/
 !**/src/test/**/build/
 
