@@ -1,0 +1,91 @@
+  pipeline {
+    agent any
+
+    environment {
+    MAVEN_OPTS = "-Xmx1024m"
+    }
+
+    options {
+    skipStagesAfterUnstable()
+    timestamps()
+  buildDiscarder(logRotator(numToKeepStr: '10'))
+  }
+
+    stages {
+    stage('Checkout Code') {
+    steps {
+    echo '📦 Checking out the repository...'
+  git branch: 'main', url: 'https://github.com/AkshayAlshi/Plawright-Freamwork.git'
+  }
+  }
+
+    stage('Build & Run Tests') {
+    steps {
+    echo '⚙️ Running Maven tests...'
+    bat 'mvn clean test dependency:copy-dependencies'
+  }
+  }
+
+    stage('Publish Extent Report') {
+    steps {
+    echo '📊 Publishing Extent Report...'
+  publishHTML([allowMissing: false,
+    alwaysLinkToLastBuild: false,
+    keepAll: true,
+    reportDir: 'build',
+    reportFiles: 'TestExecutionReport.html',
+    reportName: 'HTML Extent Report',
+    reportTitles: ''])
+  }
+  }
+
+    stage('Archive Report') {
+    steps {
+    echo '🗂️ Archiving HTML report for download...'
+  archiveArtifacts artifacts: 'build/TestExecutionReport.html', fingerprint: true
+  }
+  }
+  }
+
+    post {
+    success {
+    echo '✅ Build completed successfully.'
+    
+    emailext (
+  subject: "✅ Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+  body: """Hello Team,<br><br>
+                        The test execution completed successfully.<br>
+                        Please find the attached <b>Extent Test Report</b>.<br><br>
+                        Regards,<br>
+                        Jenkins Pipeline
+                        """,
+  from: 'akshayalshi10@gmail.com',
+  to: 'aalshi@microproindia.com',
+  attachmentsPattern: 'build/TestExecutionReport.html',
+  mimeType: 'text/html'
+    )
+  }
+
+    failure {
+    echo '❌ Build failed. Check console logs and report.'
+    
+    emailext (
+  subject: "❌ Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+  body: """Hello Team,<br><br>
+                        The build has failed. Please review the console logs and attached report (if available).<br><br>
+                        Regards,<br>
+                        Jenkins Pipeline
+                        """,
+  from: 'akshayalshi10@gmail.com',
+  to: 'aalshi@microproindia.com',
+  attachmentsPattern: 'build/TestExecutionReport.html',
+  mimeType: 'text/html'
+    )
+  }
+
+    cleanup {
+    echo '🧹 Cleaning workspace...'
+    cleanWs()
+      }
+    }
+  }
